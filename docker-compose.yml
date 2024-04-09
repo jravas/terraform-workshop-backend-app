@@ -1,11 +1,25 @@
 version: '3.8'
 
 services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: terraform-workshop-backend-app
+    env_file: .env
+    depends_on:
+      - db
+    ports:
+      - 3000:3000
+      - 9229:9229
+    volumes:
+      - ./src:/usr/src/app/src
+      - ./test:/usr/src/app/test
   db:
     image: postgres:latest
     restart: always
     ports:
-      - "5432:5432"
+      - '5432:5432'
     environment:
       POSTGRES_DB: nestjs_db
       POSTGRES_USER: nestjs_user
