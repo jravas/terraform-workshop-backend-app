@@ -3,12 +3,12 @@ on:
   workflow_dispatch:
     inputs:
       target:
-        description: "Target image to build"
+        description: 'Target image to build'
         required: true
-        default: terraform-workshop-backend-app
+        default: terraform-workshop-ecs-backend
         type: choice
         options:
-          - terraform-workshop-backend-app
+          - terraform-workshop-ecs-backend
   workflow_call:
     inputs:
       target:
@@ -54,7 +54,7 @@ jobs:
             type=raw,value=${{ github.event.after }}
             type=raw,value=${{ github.head_ref }}
 
-      - name: "Build ${{ inputs.target }} image"
+      - name: 'Build ${{ inputs.target }} image'
         id: build-push
         uses: docker/build-push-action@v2
         with:

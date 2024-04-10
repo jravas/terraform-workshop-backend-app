@@ -9,4 +9,4 @@ jobs:
     uses: ./.github/workflows/build-image.yml
     secrets: inherit
     with:
-      target: terraform-workshop-backend-app
+      target: terraform-workshop-ecs-backend

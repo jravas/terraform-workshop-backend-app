@@ -3,11 +3,11 @@ on:
   workflow_dispatch:
     inputs:
       old-tag:
-        description: "Current image tag"
+        description: 'Current image tag'
         required: true
         type: string
       new-tag:
-        description: "Tag to apply to the image"
+        description: 'Tag to apply to the image'
         required: true
         default: development
         type: choice
@@ -15,11 +15,11 @@ on:
           - development
           - production
       target:
-        description: "ECR image name"
+        description: 'ECR image name'
         required: true
         type: choice
         options:
-          - terraform-workshop-backend-app
+          - terraform-workshop-ecs-backend
   workflow_call:
     inputs:
       new-tag:
@@ -54,7 +54,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: "Retag ${{ inputs.old-tag }} to ${{ inputs.new-tag }}"
+      - name: 'Retag ${{ inputs.old-tag }} to ${{ inputs.new-tag }}'
         uses: abronin/ecr-retag-action@v1.6.0
         with:
           repository: ${{ inputs.target }}
