@@ -1,0 +1,67 @@
+name: r/Build
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Target image to build'
+        required: true
+        default: terraform-workshop-ecs-backend
+        type: choice
+        options:
+          - terraform-workshop-ecs-backend
+  workflow_call:
+    inputs:
+      target:
+        required: true
+        type: string
+    secrets:
+      AWS_ACCESS_KEY:
+        required: true
+      AWS_ACCESS_SECRET:
+        required: true
+      AWS_DEFAULT_REGION:
+        required: true
+
+jobs:
+  build-tag-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_ACCESS_SECRET }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ inputs.target }}
+          tags: |
+            type=ref,event=pr
+            type=raw,value=${{ github.event.after }}
+            type=raw,value=${{ github.head_ref }}
+
+      - name: 'Build ${{ inputs.target }} image'
+        id: build-push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          target: ${{ inputs.target }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

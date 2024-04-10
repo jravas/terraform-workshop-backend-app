@@ -1,0 +1,62 @@
+name: r/Retag
+on:
+  workflow_dispatch:
+    inputs:
+      old-tag:
+        description: 'Current image tag'
+        required: true
+        type: string
+      new-tag:
+        description: 'Tag to apply to the image'
+        required: true
+        default: development
+        type: choice
+        options:
+          - development
+          - production
+      target:
+        description: 'ECR image name'
+        required: true
+        type: choice
+        options:
+          - terraform-workshop-ecs-backend
+  workflow_call:
+    inputs:
+      new-tag:
+        required: true
+        type: string
+      old-tag:
+        required: true
+        type: string
+      target:
+        required: true
+        type: string
+    secrets:
+      AWS_ACCESS_KEY:
+        required: true
+      AWS_ACCESS_SECRET:
+        required: true
+      AWS_DEFAULT_REGION:
+        required: true
+
+jobs:
+  retag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_ACCESS_SECRET }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: 'Retag ${{ inputs.old-tag }} to ${{ inputs.new-tag }}'
+        uses: abronin/ecr-retag-action@v1.6.0
+        with:
+          repository: ${{ inputs.target }}
+          tag: ${{ inputs.old-tag }}
+          new-tags: ${{ inputs.new-tag }}, ${{ github.sha }}

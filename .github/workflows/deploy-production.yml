@@ -1,0 +1,27 @@
+name: 'Deploy: Production'
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  retag:
+    uses: ./.github/workflows/retag.yml
+    secrets: inherit
+    with:
+      target: terraform-workshop-ecs-backend
+      old-tag: development
+      new-tag: production
+
+  deploy:
+    if: github.event.pull_request.merged
+    needs: retag
+    uses: ./.github/workflows/deploy-application.yml
+    secrets: inherit
+    with:
+      target: terraform-workshop-ecs-backend
+      environment: production
+      container-name: production-backend-container
+      service-name: production-backend-service
+      cluster-name: production-cluster
+      task-definition-family: production-backend-task
